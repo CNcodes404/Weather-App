@@ -30,6 +30,33 @@
 
 ---
 
+## Progress Tracker
+
+| Step | Description | Status |
+|------|-------------|--------|
+| 0 | Project Scaffold | ✅ Done |
+| 1 | Project Structure & Types | ✅ Done |
+| 2 | Weather Service & Data Hooks | ✅ Done |
+| 3 | App Shell & Dynamic Background | ✅ Done |
+| 4 | Current Conditions Hero Card | ✅ Done |
+| 5 | Weather Stats Bar | ✅ Done |
+| 6 | 7-Day Forecast Strip | ✅ Done |
+| 7 | Hourly Temperature Chart | ✅ Done |
+| 8 | Sunrise / Sunset & AQI | ✅ Done |
+| 9 | Weather Map | ✅ Done |
+| 10 | Skeleton States & Error Handling | ✅ Done |
+| 11 | Responsive Layout & Mobile | ✅ Done |
+| 12 | Gemini Service & AI Infrastructure | ✅ Done |
+| 12a | UI Visual Polish Sprint | ✅ Done |
+| 13 | AI Feature: Outfit Oracle | ⬜ Next |
+| 14 | AI Feature: Mood Board | ⬜ |
+| 15 | AI Feature: Weather Impact Score | ⬜ |
+| 16 | AI Feature: Weather Narrator | ⬜ |
+| 17 | AI Feature: Ask the Sky (Chat) | ⬜ |
+| 18 | Final Polish Pass | ⬜ |
+
+---
+
 ## Step 0 — Project Scaffold
 
 **Goal:** A running blank Vite app with all dependencies installed and Tailwind working.
@@ -457,6 +484,47 @@ generateStream(prompt: string, onChunk: (text: string) => void): Promise<void>
 - Call `generateText("Say hello in 5 words")` in browser console via a test button
 - Gemini responds with text
 - `generateStream` streams tokens visibly one by one
+
+---
+
+## Step 12a — UI Visual Polish Sprint ✅
+
+**Goal:** Fix flat/indistinct backgrounds and low-contrast glass cards before AI features are built on top of them.
+
+**Why here:** Every AI card inherits the same visual foundation. Fixing it now means AI features look great immediately rather than requiring a second pass after Step 18.
+
+### Changes made
+
+**`src/types/app.ts`**
+- Added optional `glowColor?: string` to `WeatherTheme` — used for per-condition radial light source
+
+**`src/constants/weather.ts`**
+- Reworked all clear daytime gradients to use warm-to-cool contrast instead of blue-on-blue:
+  - Dawn: gold → orange → sky blue
+  - Morning: warm cream → bright sky blue → deep blue
+  - Midday: pale sky → vivid sky blue → deep ocean blue
+  - Afternoon: amber → sky blue → rich blue
+  - Evening: fiery orange → pink → violet (unchanged, already dramatic)
+  - Night: deep navy → dark indigo → near-black
+- Clouds: light silver top → dark slate bottom (high contrast)
+- Rain: deep teal → dark navy
+- Added `glowColor` to all themes that have a visible light source (sun, moon)
+
+**`src/components/layout/AppBackground.tsx`**
+- Added 3 stacked layers inside the animated div:
+  1. Base gradient (was the only layer before)
+  2. Radial glow at top-right using `theme.glowColor` — simulates sun/moon
+  3. Bottom vignette (`rgba(0,0,0,0.25)`) — adds depth, grounds the cards
+
+**`src/components/common/GlassCard.tsx`**
+- Bumped opacity: `bg-white/10` → `bg-white/[0.13]`
+- Adjusted border: `border-white/20` → `border-white/[0.18]`
+- Added `shadow-black/20` tint so cards lift off the background
+
+### Checkpoint ✓
+- Clear sky and cloudy conditions are visually distinct at a glance
+- A light source glow is visible in the upper-right for daytime clear conditions
+- Cards are legible against all background conditions
 
 ---
 

@@ -1,7 +1,6 @@
 import type { WeatherCondition } from '@/types/weather'
 import type { WeatherTheme, TimeOfDay } from '@/types/app'
 
-// Maps each condition + time-of-day to a gradient theme for AppBackground.
 export function getWeatherTheme(condition: WeatherCondition, timeOfDay: TimeOfDay): WeatherTheme {
   switch (condition) {
     case 'clear':
@@ -32,49 +31,61 @@ export function getWeatherTheme(condition: WeatherCondition, timeOfDay: TimeOfDa
 
 const CLEAR_THEMES: Record<TimeOfDay, WeatherTheme> = {
   dawn: {
-    gradientFrom: '#F97316',
-    gradientVia: '#FB923C',
+    // Warm gold sunrise bleeding into sky blue
+    gradientFrom: '#FCD34D',
+    gradientVia: '#F97316',
     gradientTo: '#7DD3FC',
+    glowColor: 'rgba(252, 211, 77, 0.45)',
     glassOpacity: 0.15,
-    textColor: 'dark',
+    textColor: 'light',
     accentColor: '#F97316',
   },
   morning: {
-    gradientFrom: '#38BDF8',
-    gradientVia: '#0EA5E9',
-    gradientTo: '#1D4ED8',
+    // Warm cream top → rich sky blue → deep blue horizon
+    gradientFrom: '#FEF9C3',
+    gradientVia: '#38BDF8',
+    gradientTo: '#0369A1',
+    glowColor: 'rgba(255, 255, 255, 0.30)',
     glassOpacity: 0.15,
     textColor: 'light',
     accentColor: '#38BDF8',
   },
   midday: {
-    gradientFrom: '#0EA5E9',
-    gradientVia: '#2563EB',
-    gradientTo: '#1D4ED8',
+    // Bright pale sky → vivid blue → deep ocean blue
+    gradientFrom: '#BAE6FD',
+    gradientVia: '#0EA5E9',
+    gradientTo: '#1E40AF',
+    glowColor: 'rgba(186, 230, 253, 0.50)',
     glassOpacity: 0.12,
     textColor: 'light',
     accentColor: '#38BDF8',
   },
   afternoon: {
-    gradientFrom: '#60A5FA',
-    gradientVia: '#3B82F6',
+    // Warm amber-tinted top → sky blue → rich blue
+    gradientFrom: '#FEF3C7',
+    gradientVia: '#60A5FA',
     gradientTo: '#1D4ED8',
+    glowColor: 'rgba(254, 243, 199, 0.45)',
     glassOpacity: 0.15,
     textColor: 'light',
     accentColor: '#60A5FA',
   },
   evening: {
+    // Fiery orange → hot pink → deep violet
     gradientFrom: '#F97316',
     gradientVia: '#EC4899',
     gradientTo: '#7C3AED',
+    glowColor: 'rgba(249, 115, 22, 0.40)',
     glassOpacity: 0.18,
     textColor: 'light',
     accentColor: '#F97316',
   },
   night: {
+    // Deep navy → dark indigo → near-black
     gradientFrom: '#0F172A',
     gradientVia: '#1E1B4B',
-    gradientTo: '#0F172A',
+    gradientTo: '#030712',
+    glowColor: 'rgba(129, 140, 248, 0.15)',
     glassOpacity: 0.2,
     textColor: 'light',
     accentColor: '#818CF8',
@@ -82,21 +93,24 @@ const CLEAR_THEMES: Record<TimeOfDay, WeatherTheme> = {
 }
 
 const CLOUDY_THEME: WeatherTheme = {
-  gradientFrom: '#94A3B8',
-  gradientVia: '#64748B',
-  gradientTo: '#475569',
+  // Light silver top → dark slate bottom — dramatic contrast
+  gradientFrom: '#CBD5E1',
+  gradientVia: '#475569',
+  gradientTo: '#1E293B',
   glassOpacity: 0.15,
   textColor: 'light',
   accentColor: '#94A3B8',
 }
 
 const RAIN_THEME: WeatherTheme = {
-  gradientFrom: '#1E3A5F',
-  gradientVia: '#2D5986',
-  gradientTo: '#1A2F4A',
+  // Deep teal-blue → dark navy
+  gradientFrom: '#0C4A6E',
+  gradientVia: '#1E3A8A',
+  gradientTo: '#0F172A',
+  glowColor: 'rgba(14, 116, 144, 0.20)',
   glassOpacity: 0.2,
   textColor: 'light',
-  accentColor: '#60A5FA',
+  accentColor: '#38BDF8',
 }
 
 const STORM_THEME: WeatherTheme = {
@@ -112,16 +126,17 @@ const SNOW_THEME: WeatherTheme = {
   gradientFrom: '#EFF6FF',
   gradientVia: '#BFDBFE',
   gradientTo: '#93C5FD',
-  glassOpacity: 0.12,
+  glowColor: 'rgba(239, 246, 255, 0.60)',
+  glassOpacity: 0.14,
   textColor: 'dark',
   accentColor: '#3B82F6',
 }
 
 const FOG_THEME: WeatherTheme = {
-  gradientFrom: '#D1D5DB',
-  gradientVia: '#9CA3AF',
-  gradientTo: '#6B7280',
+  gradientFrom: '#E2E8F0',
+  gradientVia: '#94A3B8',
+  gradientTo: '#475569',
   glassOpacity: 0.18,
-  textColor: 'dark',
-  accentColor: '#6B7280',
+  textColor: 'light',
+  accentColor: '#94A3B8',
 }

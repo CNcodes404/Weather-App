@@ -16,6 +16,7 @@ export interface WeatherTheme {
   gradientFrom: string
   gradientVia: string
   gradientTo: string
+  glowColor?: string
   glassOpacity: number
   textColor: TextColor
   accentColor: string
