@@ -4,9 +4,15 @@ import { AppShell } from '@/components/layout/AppShell'
 import { LocationSearch } from '@/components/search/LocationSearch'
 import { CurrentConditions } from '@/components/weather/CurrentConditions'
 import { WeatherStats } from '@/components/weather/WeatherStats'
+import { AQIGauge } from '@/components/weather/AQIGauge'
+import { HourlyChart } from '@/components/weather/HourlyChart'
+import { DailyForecast } from '@/components/weather/DailyForecast'
+import { SunriseSunset } from '@/components/weather/SunriseSunset'
+import { WeatherMap } from '@/components/weather/WeatherMap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useWeather } from '@/hooks/useWeather'
+import { useForecast } from '@/hooks/useForecast'
 import { useUnits } from '@/hooks/useUnits'
 import { useTheme } from '@/hooks/useTheme'
 import { useWeatherStore } from '@/store/weatherStore'
@@ -26,13 +32,15 @@ export function WeatherDashboard() {
 
   const activeLocation = location ?? geoLocation
 
-  const { data: weather, isLoading, isError, refetch } = useWeather(
-    activeLocation?.lat ?? null,
-    activeLocation?.lon ?? null,
-    units,
-  )
+  const lat = activeLocation?.lat ?? null
+  const lon = activeLocation?.lon ?? null
+
+  const { data: weather, isLoading, isError, refetch } = useWeather(lat, lon, units)
+  const { data: forecast } = useForecast(lat, lon, units)
 
   const theme = useTheme(weather?.condition)
+
+  const timezoneOffset = forecast?.timezone ?? weather?.timezone ?? 0
 
   return (
     <>
@@ -71,6 +79,41 @@ export function WeatherDashboard() {
             <>
               <CurrentConditions weather={weather} units={units} />
               <WeatherStats weather={weather} units={units} />
+
+              {/* Sunrise + AQI row */}
+              <div className="grid grid-cols-2 gap-3">
+                <SunriseSunset
+                  sunrise={weather.sunrise}
+                  sunset={weather.sunset}
+                  timezone={timezoneOffset}
+                />
+                {lat !== null && lon !== null && (
+                  <AQIGauge lat={lat} lon={lon} />
+                )}
+              </div>
+
+              {/* Hourly chart */}
+              {forecast && (
+                <HourlyChart
+                  hourly={forecast.hourly}
+                  units={units}
+                  timezoneOffset={timezoneOffset}
+                />
+              )}
+
+              {/* 7-day forecast */}
+              {forecast && (
+                <DailyForecast
+                  daily={forecast.daily}
+                  units={units}
+                  timezoneOffset={timezoneOffset}
+                />
+              )}
+
+              {/* Map */}
+              {lat !== null && lon !== null && (
+                <WeatherMap lat={lat} lon={lon} />
+              )}
             </>
           )}
         </div>
