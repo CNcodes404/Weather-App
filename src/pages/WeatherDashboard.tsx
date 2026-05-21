@@ -62,7 +62,7 @@ export function WeatherDashboard() {
     <>
       <AppBackground theme={theme} />
       <AppShell>
-        <div className="space-y-4">
+        <div id="section-weather" className="space-y-4">
           <LocationSearch />
 
           {/* Hero + stats */}
@@ -124,11 +124,18 @@ export function WeatherDashboard() {
             />
           )}
 
-          {/* Map */}
+          {/* Map — scroll target for mobile nav */}
+          <div id="section-map" />
           {weatherLoading && <MapSkeleton />}
           {weather && lat !== null && lon !== null && (
             <WeatherMap lat={lat} lon={lon} />
           )}
+
+          {/* AI section anchor — populated in Steps 13–17 */}
+          <div id="section-ai" />
+
+          {/* Settings anchor — unit toggle lives in CurrentConditions header */}
+          <div id="section-settings" />
         </div>
       </AppShell>
     </>
