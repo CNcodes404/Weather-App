@@ -88,7 +88,13 @@ export function HourlyChart({ hourly, units, timezoneOffset }: HourlyChartProps)
             domain={[0, 100]}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Bar yAxisId="rain" dataKey="rain" fill="rgba(96,165,250,0.25)" radius={[2, 2, 0, 0]} />
+          <defs>
+            <linearGradient id="rainGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(96,165,250,0.45)" />
+              <stop offset="100%" stopColor="rgba(96,165,250,0.05)" />
+            </linearGradient>
+          </defs>
+          <Bar yAxisId="rain" dataKey="rain" fill="url(#rainGradient)" radius={[2, 2, 0, 0]} />
           <Line
             yAxisId="temp"
             type="monotone"

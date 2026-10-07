@@ -13,3 +13,6 @@ Report back:
 - What files were created or modified
 - The result of the Checkpoint verification
 - What the next step is
+
+After reporting, identify which section heading in TESTING.md best matches the feature you just built.
+Output on its own line: "Run `/test-feature \"[Section Name]\"` to generate a test report for this feature."

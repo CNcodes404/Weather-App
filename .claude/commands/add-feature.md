@@ -18,3 +18,6 @@ Implement the AI feature:
 6. Verify the Checkpoint from DEVELOPMENT_PLAN.md for this feature
 
 Report: which files were created, what the Gemini call looks like, and confirm the feature renders correctly.
+
+After reporting, identify which section heading in TESTING.md best matches the feature you just built.
+Output on its own line: "Run `/test-feature \"[Section Name]\"` to generate a test report for this feature."

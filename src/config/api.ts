@@ -8,3 +8,7 @@ export const ENDPOINTS = {
   geocoding: '/geo/1.0/direct',
   reverseGeocode: '/geo/1.0/reverse',
 } as const
+
+export const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+export const OWM_TILE_URL = (layer: string) =>
+  `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${OWM_KEY}`

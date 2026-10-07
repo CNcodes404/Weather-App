@@ -15,22 +15,27 @@ import {
 import { cn } from '@/lib/utils'
 import type { WeatherCondition } from '@/types/weather'
 
-const ICON_MAP: Record<WeatherCondition, ElementType> = {
-  clear: Sun,
-  clouds: CloudSun,
-  rain: CloudRain,
-  drizzle: CloudDrizzle,
-  thunderstorm: CloudLightning,
-  snow: CloudSnow,
-  mist: CloudFog,
-  fog: CloudFog,
-  haze: CloudFog,
-  smoke: Wind,
-  dust: Wind,
-  sand: Wind,
-  ash: Cloud,
-  squall: Wind,
-  tornado: Tornado,
+interface IconConfig {
+  icon: ElementType
+  color: string
+}
+
+const ICON_MAP: Record<WeatherCondition, IconConfig> = {
+  clear:       { icon: Sun,           color: 'text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' },
+  clouds:      { icon: CloudSun,      color: 'text-slate-300' },
+  rain:        { icon: CloudRain,     color: 'text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.5)]' },
+  drizzle:     { icon: CloudDrizzle,  color: 'text-sky-400' },
+  thunderstorm:{ icon: CloudLightning,color: 'text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.6)]' },
+  snow:        { icon: CloudSnow,     color: 'text-blue-100 drop-shadow-[0_0_6px_rgba(219,234,254,0.6)]' },
+  mist:        { icon: CloudFog,      color: 'text-slate-400' },
+  fog:         { icon: CloudFog,      color: 'text-slate-400' },
+  haze:        { icon: CloudFog,      color: 'text-amber-200/80' },
+  smoke:       { icon: Wind,          color: 'text-slate-400' },
+  dust:        { icon: Wind,          color: 'text-yellow-600/80' },
+  sand:        { icon: Wind,          color: 'text-yellow-500/80' },
+  ash:         { icon: Cloud,         color: 'text-slate-500' },
+  squall:      { icon: Wind,          color: 'text-cyan-400' },
+  tornado:     { icon: Tornado,       color: 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.6)]' },
 }
 
 const SIZE_CLASSES = {
@@ -53,11 +58,12 @@ export function WeatherIcon({
   className,
   animated = true,
 }: WeatherIconProps) {
-  const Icon = ICON_MAP[condition] ?? CloudSun
+  const config = ICON_MAP[condition] ?? ICON_MAP.clouds
+  const Icon = config.icon
 
   const icon = (
     <Icon
-      className={cn(SIZE_CLASSES[size], 'text-white drop-shadow-lg', className)}
+      className={cn(SIZE_CLASSES[size], config.color, className)}
       strokeWidth={1.5}
     />
   )

@@ -41,31 +41,31 @@ const CLEAR_THEMES: Record<TimeOfDay, WeatherTheme> = {
     accentColor: '#F97316',
   },
   morning: {
-    // Warm cream top → rich sky blue → deep blue horizon
-    gradientFrom: '#FEF9C3',
+    // Saturated gold top → bright sky blue → deep blue horizon
+    gradientFrom: '#FCD34D',
     gradientVia: '#38BDF8',
     gradientTo: '#0369A1',
-    glowColor: 'rgba(255, 255, 255, 0.30)',
+    glowColor: 'rgba(252, 211, 77, 0.40)',
     glassOpacity: 0.15,
     textColor: 'light',
     accentColor: '#38BDF8',
   },
   midday: {
-    // Bright pale sky → vivid blue → deep ocean blue
-    gradientFrom: '#BAE6FD',
+    // Rich sky blue top → vivid blue → deep ocean blue
+    gradientFrom: '#38BDF8',
     gradientVia: '#0EA5E9',
     gradientTo: '#1E40AF',
-    glowColor: 'rgba(186, 230, 253, 0.50)',
+    glowColor: 'rgba(56, 189, 248, 0.35)',
     glassOpacity: 0.12,
     textColor: 'light',
     accentColor: '#38BDF8',
   },
   afternoon: {
-    // Warm amber-tinted top → sky blue → rich blue
-    gradientFrom: '#FEF3C7',
+    // Warm amber top → sky blue → rich blue
+    gradientFrom: '#FCD34D',
     gradientVia: '#60A5FA',
     gradientTo: '#1D4ED8',
-    glowColor: 'rgba(254, 243, 199, 0.45)',
+    glowColor: 'rgba(252, 211, 77, 0.40)',
     glassOpacity: 0.15,
     textColor: 'light',
     accentColor: '#60A5FA',
@@ -123,13 +123,13 @@ const STORM_THEME: WeatherTheme = {
 }
 
 const SNOW_THEME: WeatherTheme = {
-  gradientFrom: '#EFF6FF',
-  gradientVia: '#BFDBFE',
-  gradientTo: '#93C5FD',
-  glowColor: 'rgba(239, 246, 255, 0.60)',
-  glassOpacity: 0.14,
-  textColor: 'dark',
-  accentColor: '#3B82F6',
+  gradientFrom: '#BAE6FD',
+  gradientVia: '#93C5FD',
+  gradientTo: '#3B82F6',
+  glowColor: 'rgba(186, 230, 253, 0.35)',
+  glassOpacity: 0.15,
+  textColor: 'light',
+  accentColor: '#93C5FD',
 }
 
 const FOG_THEME: WeatherTheme = {

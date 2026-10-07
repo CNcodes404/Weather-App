@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { AppBackground } from '@/components/layout/AppBackground'
 import { AppShell } from '@/components/layout/AppShell'
 import { LocationSearch } from '@/components/search/LocationSearch'
@@ -9,6 +10,10 @@ import { HourlyChart } from '@/components/weather/HourlyChart'
 import { DailyForecast } from '@/components/weather/DailyForecast'
 import { SunriseSunset } from '@/components/weather/SunriseSunset'
 import { WeatherMap } from '@/components/weather/WeatherMap'
+import { MoodBoard } from '@/components/ai/MoodBoard'
+import { ImpactScore } from '@/components/ai/ImpactScore'
+import { WeatherNarrator } from '@/components/ai/WeatherNarrator'
+import { AskTheSky } from '@/components/ai/AskTheSky'
 import {
   HeroSkeleton,
   StatsSkeleton,
@@ -80,22 +85,26 @@ export function WeatherDashboard() {
           )}
           {weather && (
             <>
-              <CurrentConditions weather={weather} units={units} />
-              <WeatherStats weather={weather} units={units} />
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
+                <CurrentConditions weather={weather} units={units} />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.13 }}>
+                <WeatherStats weather={weather} units={units} />
+              </motion.div>
             </>
           )}
 
           {/* Sunrise + AQI */}
           {weatherLoading && <SunriseAQISkeleton />}
           {weather && lat !== null && lon !== null && (
-            <div className="grid grid-cols-2 gap-3">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.21 }} className="grid grid-cols-2 gap-3">
               <SunriseSunset
                 sunrise={weather.sunrise}
                 sunset={weather.sunset}
                 timezone={timezoneOffset}
               />
               <AQIGauge lat={lat} lon={lon} />
-            </div>
+            </motion.div>
           )}
 
           {/* Hourly chart */}
@@ -107,32 +116,58 @@ export function WeatherDashboard() {
             />
           )}
           {forecast && (
-            <HourlyChart
-              hourly={forecast.hourly}
-              units={units}
-              timezoneOffset={timezoneOffset}
-            />
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.29 }}>
+              <HourlyChart
+                hourly={forecast.hourly}
+                units={units}
+                timezoneOffset={timezoneOffset}
+              />
+            </motion.div>
           )}
 
           {/* 7-day forecast */}
           {forecastLoading && <ForecastSkeleton />}
           {forecast && (
-            <DailyForecast
-              daily={forecast.daily}
-              units={units}
-              timezoneOffset={timezoneOffset}
-            />
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.37 }}>
+              <DailyForecast
+                daily={forecast.daily}
+                units={units}
+                timezoneOffset={timezoneOffset}
+              />
+            </motion.div>
           )}
 
           {/* Map — scroll target for mobile nav */}
           <div id="section-map" />
           {weatherLoading && <MapSkeleton />}
           {weather && lat !== null && lon !== null && (
-            <WeatherMap lat={lat} lon={lon} />
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.45 }}>
+              <WeatherMap lat={lat} lon={lon} />
+            </motion.div>
           )}
 
-          {/* AI section anchor — populated in Steps 13–17 */}
+          {/* AI features */}
           <div id="section-ai" />
+          {weather && (
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.61 }}>
+              <MoodBoard weather={weather} />
+            </motion.div>
+          )}
+          {weather && forecast && (
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.69 }}>
+              <ImpactScore weather={weather} hourly={forecast.hourly} />
+            </motion.div>
+          )}
+          {weather && (
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.77 }}>
+              <WeatherNarrator weather={weather} units={units} />
+            </motion.div>
+          )}
+          {weather && (
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.85 }}>
+              <AskTheSky weather={weather} units={units} />
+            </motion.div>
+          )}
 
           {/* Settings anchor — unit toggle lives in CurrentConditions header */}
           <div id="section-settings" />

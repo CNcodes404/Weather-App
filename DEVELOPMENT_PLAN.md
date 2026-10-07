@@ -17,7 +17,8 @@
 | Maps | Leaflet + react-leaflet |
 | Icons | Lucide React |
 | Weather Data | OpenWeatherMap API (free) |
-| AI | Google Gemini API — `gemini-2.0-flash` (free) |
+| AI (primary) | Groq API — `llama-3.3-70b-versatile` (14,400 req/day free) |
+| AI (fallback) | OpenRouter — `meta-llama/llama-3.1-8b-instruct:free` |
 
 ---
 
@@ -26,7 +27,10 @@
 | Key | Where to get | .env variable |
 |-----|-------------|---------------|
 | OpenWeatherMap | openweathermap.org → My API Keys | `VITE_OWM_API_KEY` |
-| Google Gemini | aistudio.google.com → Get API Key | `VITE_GEMINI_API_KEY` |
+| Groq (primary AI) | console.groq.com → API Keys | `VITE_GROQ_API_KEY` |
+| OpenRouter (fallback AI) | openrouter.ai → API Keys | `VITE_OPENROUTER_API_KEY` |
+
+Only one AI key is required. If `VITE_GROQ_API_KEY` is set it takes priority. If not, the service falls back to OpenRouter automatically.
 
 ---
 
@@ -44,16 +48,17 @@
 | 7 | Hourly Temperature Chart | ✅ Done |
 | 8 | Sunrise / Sunset & AQI | ✅ Done |
 | 9 | Weather Map | ✅ Done |
+| 9a | Weather Map — Click-to-Pin + Zoom | ✅ Done |
 | 10 | Skeleton States & Error Handling | ✅ Done |
 | 11 | Responsive Layout & Mobile | ✅ Done |
-| 12 | Gemini Service & AI Infrastructure | ✅ Done |
+| 12 | AI Service & Infrastructure (Groq) | ✅ Done |
 | 12a | UI Visual Polish Sprint | ✅ Done |
-| 13 | AI Feature: Outfit Oracle | ⬜ Next |
-| 14 | AI Feature: Mood Board | ⬜ |
-| 15 | AI Feature: Weather Impact Score | ⬜ |
-| 16 | AI Feature: Weather Narrator | ⬜ |
-| 17 | AI Feature: Ask the Sky (Chat) | ⬜ |
-| 18 | Final Polish Pass | ⬜ |
+| 13 | AI Feature: Outfit Oracle | 🚫 Removed |
+| 14 | AI Feature: Mood Board | ✅ Done |
+| 15 | AI Feature: Weather Impact Score | ✅ Done |
+| 16 | AI Feature: Weather Narrator + Speak | ✅ Done |
+| 17 | AI Feature: Ask the Sky (Chat) | ✅ Done |
+| 18 | Final Polish Pass | ✅ Done |
 
 ---
 
@@ -390,6 +395,31 @@ https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid={KEY}
 
 ---
 
+## Step 9a — Weather Map: Click-to-Pin + Zoom ✅
+
+**Goal:** Make the map interactive — users can pin any location to get its weather, and zoom freely.
+
+### Changes to `components/weather/WeatherMap.tsx`
+- **Zoom re-enabled:** `scrollWheelZoom={true}`, removed `zoomControl={false}` (Leaflet default +/- buttons restored)
+- **Click-to-pin:** `ClickHandler` component using `useMapEvents` drops an amber `CircleMarker` on click
+- **Confirmation banner:** clicking does NOT immediately update weather; instead shows a `pendingGeo` banner: `📍 City, Country [Set as Location] [✕]`
+  - "Set as Location" → calls `setLocation()` from Zustand → all React Query hooks refetch
+  - "✕" → dismisses pin without changing any data
+- **Reverse geocode:** `reverseGeocode(lat, lon)` called after click to get city name for the banner
+- **Pin status header:** shows "Tap map to pin" / "Locating…" / city name
+
+### Why confirmation banner instead of immediate update
+Calling `setLocation` immediately triggered all `useWeather`, `useForecast`, `useAirQuality` hooks simultaneously, causing every loading skeleton to flash across the page on every accidental map click.
+
+### Checkpoint ✓
+- Scroll on map → zooms in/out
+- Click drops amber dot + "Locating…" appears
+- Banner shows geocoded city name
+- "Set as Location" → weather updates once, intentionally
+- "✕" → pin clears, weather unchanged
+
+---
+
 ## Step 10 — Skeleton States & Error Handling
 
 **Goal:** The app should never show broken/empty UI during loading or on API errors.
@@ -442,28 +472,36 @@ data      → show real content
 
 ---
 
-## Step 12 — Gemini Service & AI Infrastructure
+## Step 12 — AI Service & Infrastructure (Groq) ✅
 
-**Goal:** Reusable Gemini integration before any feature uses it.
+**Goal:** Reusable AI integration before any feature uses it.
 
-### `services/gemini.service.ts`
+**Note:** Originally planned for Google Gemini. Switched to Groq (`groq-sdk`) due to Gemini API quota exhaustion on the free tier. Groq provides 14,400 requests/day free with no credit card.
+
+### `services/gemini.service.ts` (uses Groq SDK internally)
 ```typescript
-// Two exported functions used by all AI features:
+// Three exported functions used by all AI features:
 
 generateText(prompt: string): Promise<string>
-// → single response, used for JSON-output features
+// → single response, used for JSON-output features (Mood Board, Impact Score)
 
 generateStream(prompt: string, onChunk: (text: string) => void): Promise<void>
-// → streaming, used for Outfit Oracle and Narrator
+// → streaming, used for Weather Narrator
+
+generateChat(systemPrompt: string, messages: ServiceChatMessage[]): Promise<string>
+// → multi-turn conversation, used for Ask the Sky
 ```
+
+Client auto-selects provider based on which key is present in `.env`:
+- `VITE_GROQ_API_KEY` → Groq, model `llama-3.3-70b-versatile`
+- `VITE_OPENROUTER_API_KEY` → OpenRouter, model `meta-llama/llama-3.1-8b-instruct:free`
 
 ### `hooks/useGemini.ts`
 ```typescript
-// Wraps gemini.service with React state:
 {
-  generate: (prompt: string) => void
-  stream: (prompt: string) => void
-  output: string       // accumulated streamed text
+  generate: (prompt: string) => void   // for JSON features
+  stream: (prompt: string) => void     // for streaming text features
+  output: string
   isLoading: boolean
   error: string | null
   reset: () => void
@@ -471,19 +509,16 @@ generateStream(prompt: string, onChunk: (text: string) => void): Promise<void>
 ```
 
 ### `components/ai/AICard.tsx`
-- Glassmorphism card with AI sparkle header
-- Slot for a trigger button + output area
-- `StreamingText.tsx` sub-component: displays text character by character with blinking cursor
+- Glassmorphism card with shimmer border while `isLoading`
+- `StreamingText.tsx` sub-component: blinking cursor disappears on completion
 
 ### `constants/prompts.ts`
-- All prompt builder functions live here
-- Pure functions: `(weatherData) => string`
-- Easy to iterate without touching component logic
+- All prompt builder functions: `buildMoodBoardPrompt`, `buildImpactScorePrompt`, `buildNarratorPrompt`, `buildChatSystemPrompt`
+- Pure functions, no side effects
 
 ### Checkpoint ✓
-- Call `generateText("Say hello in 5 words")` in browser console via a test button
-- Gemini responds with text
-- `generateStream` streams tokens visibly one by one
+- Groq API responds to `generateText` calls in browser
+- Streaming tokens appear one by one via `generateStream`
 
 ---
 
@@ -528,40 +563,13 @@ generateStream(prompt: string, onChunk: (text: string) => void): Promise<void>
 
 ---
 
-## Step 13 — AI Feature: Outfit Oracle
+## Step 13 — AI Feature: Outfit Oracle 🚫 Removed
 
-**Goal:** First AI feature. Given today's weather, Gemini recommends a full outfit.
-
-### Prompt (in `constants/prompts.ts`)
-```
-System context injected into prompt:
-"You are a stylish, fun personal stylist who understands weather practicality.
-Recommend a complete outfit: top, bottom, shoes, outerwear, and accessories.
-Be specific about materials and colors. Confident, enthusiastic tone.
-Under 100 words. No lists — write as flowing enthusiastic suggestions."
-
-User part:
-"{temp}°C, {description}, feels like {feelsLike}°, humidity {humidity}%,
-wind {windSpeed}km/h, UV index {uvi}, {precipitation}mm rain expected.
-Time of day: {timeOfDay}. Season: {season}."
-```
-
-### Component: `components/ai/OutfitOracle.tsx`
-- Header: "Outfit Oracle" + wardrobe icon
-- "What should I wear?" button → triggers stream
-- Streaming text renders below (with cursor animation)
-- Refresh icon to regenerate
-- Inside AICard wrapper
-
-### Checkpoint ✓
-- Button triggers a Gemini call
-- Text streams in visibly, character by character
-- Outfit recommendation is relevant to actual current weather
-- Refresh generates a different (but still valid) outfit
+Removed at user's request. The feature was planned but never shipped. `OutfitOracle.tsx` was deleted from the codebase. The AI section in `WeatherDashboard.tsx` starts directly with Mood Board (Step 14).
 
 ---
 
-## Step 14 — AI Feature: Mood Board
+## Step 14 — AI Feature: Mood Board ✅
 
 **Goal:** Gemini returns structured JSON that directly drives a visual color UI.
 
@@ -595,7 +603,7 @@ Time: {timeOfDay}. Month: {month}."
 
 ---
 
-## Step 15 — AI Feature: Weather Impact Score
+## Step 15 — AI Feature: Weather Impact Score ✅
 
 **Goal:** Gemini scores 5 activities based on weather. UI renders a visual grid.
 
@@ -630,9 +638,9 @@ UV {uvi}, overnight low {nightLow}°C, rain probability {rainProb}%."
 
 ---
 
-## Step 16 — AI Feature: Weather Narrator
+## Step 16 — AI Feature: Weather Narrator ✅
 
-**Goal:** Claude narrates the weather in a chosen personality tone.
+**Goal:** AI narrates the weather in a chosen personality tone. A **Speak** button was also added using the browser's native Web Speech API (`window.speechSynthesis`) — no extra packages required.
 
 ### Tone options
 | Tone | Persona |
@@ -655,7 +663,7 @@ UV {uvi}, overnight low {nightLow}°C, rain probability {rainProb}%."
 
 ---
 
-## Step 17 — AI Feature: Ask the Sky (Chat)
+## Step 17 — AI Feature: Ask the Sky (Chat) ✅
 
 **Goal:** A conversational chat widget where users ask weather-related questions.
 
@@ -712,25 +720,27 @@ UV {uvi}, overnight low {nightLow}°C, rain probability {rainProb}%."
 ## Feature Sequence Summary
 
 ```
-Step 0  ── Scaffold & dependencies
-Step 1  ── Types, store, folder structure
-Step 2  ── Weather service + data hooks
-Step 3  ── App shell + dynamic background         ← visual foundation
-Step 4  ── Current conditions hero card           ← MVP #1
-Step 5  ── Weather stats bar
-Step 6  ── 7-day forecast strip
-Step 7  ── Hourly chart
-Step 8  ── Sunrise/sunset + AQI
-Step 9  ── Weather map
-Step 10 ── Loading skeletons + error handling     ← app is solid
-Step 11 ── Responsive layout + mobile             ← mobile-ready
-Step 12 ── Gemini service + AI infrastructure     ← AI foundation
-Step 13 ── Outfit Oracle (streaming)              ← AI feature #1
-Step 14 ── Mood Board (JSON → visual)             ← AI feature #2
-Step 15 ── Impact Score (JSON → grid)             ← AI feature #3
-Step 16 ── Weather Narrator (tones)               ← AI feature #4
-Step 17 ── Ask the Sky (chat)                     ← AI feature #5
-Step 18 ── Final polish & animations
+Step 0   ── Scaffold & dependencies                      ✅
+Step 1   ── Types, store, folder structure               ✅
+Step 2   ── Weather service + data hooks                 ✅
+Step 3   ── App shell + dynamic background               ✅  ← visual foundation
+Step 4   ── Current conditions hero card                 ✅  ← MVP #1
+Step 5   ── Weather stats bar                            ✅
+Step 6   ── 7-day forecast strip                         ✅
+Step 7   ── Hourly chart                                 ✅
+Step 8   ── Sunrise/sunset + AQI                         ✅
+Step 9   ── Weather map                                  ✅
+Step 9a  ── Map click-to-pin + zoom                      ✅
+Step 10  ── Loading skeletons + error handling           ✅  ← app is solid
+Step 11  ── Responsive layout + mobile                   ✅  ← mobile-ready
+Step 12  ── Groq service + AI infrastructure             ✅  ← AI foundation
+Step 12a ── UI visual polish sprint                      ✅
+Step 13  ── Outfit Oracle                                🚫  removed
+Step 14  ── Mood Board (JSON → visual)                   ✅  ← AI feature #1
+Step 15  ── Impact Score (JSON → grid)                   ✅  ← AI feature #2
+Step 16  ── Weather Narrator + Speak                     ✅  ← AI feature #3
+Step 17  ── Ask the Sky (chat)                           ✅  ← AI feature #4
+Step 18  ── Final polish & animations                    ✅
 ```
 
 ---

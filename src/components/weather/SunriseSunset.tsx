@@ -59,8 +59,9 @@ export function SunriseSunset({ sunrise, sunset, timezone }: SunriseSunsetProps)
           <motion.circle
             cx={dotX}
             cy={dotY}
-            r="4"
+            r={4}
             fill="#FBBF24"
+            initial={{ r: 4 }}
             animate={{ r: [4, 5, 4] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
